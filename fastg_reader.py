@@ -53,20 +53,25 @@ class Fastg_reader():
             a two-tuple of strings representing an edge of the assembly graph where
             entry[0] is an edge descriptor in SPAdes .fastg-format
             entry[1] the nucleotide sequence of the edge
+        i: int
+            Line in the file corresponding to the entry
 
         Raises:
         -------
         FileError
             Reports various potential formatting issues of entries within a .fastg-file
         """
+        msg = None
         if "[" in entry[0]:
-            raise FileError(f"Line {i}: Descriptor: [] notation not supported")
+            msg = f"Line {i}: Descriptor: [] notation not supported" + "\n" + entry[0]
         if not entry[0].endswith(";"):
-            raise FileError(f"Line {i}: Descriptor: must end with ;")
+            msg = f"Line {i}: Descriptor: must end with ;" + "\n" + entry[0]
         if not entry[0].endswith(";"):
-            raise FileError(f"Line {i}: Descriptor: not more than one : allowed")
+            msg = f"Line {i}: Descriptor: not more than one : allowed" + "\n" + entry[0]
         if len([char for char in entry[1] if not char in "ACGTU"])>0:
-            raise FileError(f"Line {i+1} Sequence: not a valid nucleotide sequence (contains prohibited characters)")
+            msg = f"Line {i+1} Sequence: not a valid nucleotide sequence (contains prohibited characters)" + "\n" + entry[0] + "\n" + entry[1]
+        if msg is not None:
+            raise FileError(msg)
     
     @classmethod
     def extract_edge_properties(cls, edge_descriptor)->dict:
@@ -94,7 +99,8 @@ class Fastg_reader():
 
         match   = cls.edge_descriptor_pattern.search(edge_descriptor)
         if match is None:
-            raise FileError(f'File invalid. Check your descriptors, only SPAdes dialect is supported')
+            msg = f'File invalid. Check your descriptors, only SPAdes dialect is supported {edge_descriptor}'
+            raise FileError(msg)
         
         name     = match.group("name")
         name     = name+"-" if rc else name+"+"
@@ -133,8 +139,13 @@ class Fastg_reader():
             neighbors = []
         else:
             # has at least one adjacent edge
-            neighbors = edge_descriptor.split(":")[1].split(",") 
-            neighbors = [cls.extract_edge_properties(edge_descriptor)["name"] for edge_descriptor in neighbors]
+            neighbors = edge_descriptor.split(":")[1].split(",")
+            try:
+                neighbors = [cls.extract_edge_properties(edge_descriptor)["name"] for edge_descriptor in neighbors]
+            except:
+                print(entry[0])
+                print(entry[1])
+                x = 0/0
         edge_properties.update({"sequence": entry[1], "neighbors": neighbors})
 
         return edge_properties
@@ -155,13 +166,14 @@ class Fastg_reader():
             "length":     [None for _ in entries],
             "coverage":   [None for _ in entries],
             "sequence":   [None for _ in entries],
-            "neighbors":  [None for _ in entries]
+            "neighbors":  [None for _ in entries],
             }
 
         for i, entry in enumerate(entries):
+
             self.check_entry_format(entry, indices[i])
             entry_dict = self.entry_to_dict(entry)
             for key in node_data.keys():
                 node_data[key][i] = entry_dict[key]
-
+            
         return DataFrame(node_data)

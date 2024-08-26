@@ -1,7 +1,6 @@
 from networkx          import DiGraph, weakly_connected_components
-from polars            import col
+from polars            import col, DataFrame
 from typing_extensions import Iterator, Self
-
 
 class Assembly_graph(DiGraph):
     '''
@@ -10,15 +9,15 @@ class Assembly_graph(DiGraph):
     Here, the actual edges of the assembly graph are represented as nodes and vice versa
     '''
 
-    def __init__(self, edge_data: dict):
+    def __init__(self, edge_data: DataFrame):
         """
         Initializes the assembly graph
 
         Parameters
         ----------
-        edge_data: dict
-            A dictionary of edge data.
-            A[key][i] corresponds to property "key" of the i-th edge of an assembly graph
+        edge_data: polars.DataFrame
+            A dataframe of edge data.
+            A[key][i] corresponds to attribute "key" of the i-th edge of an assembly graph
         """
 
         super().__init__()
