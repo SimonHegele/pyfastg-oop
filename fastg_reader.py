@@ -1,5 +1,5 @@
 from re     import compile
-from pandas import DataFrame
+from polars import DataFrame
 
 class FileError(Exception):
     pass

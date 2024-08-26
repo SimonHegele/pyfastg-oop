@@ -1,5 +1,5 @@
 from networkx          import DiGraph, weakly_connected_components
-from pandas            import DataFrame
+from polars            import col
 from typing_extensions import Iterator, Self
 
 
@@ -26,7 +26,7 @@ class Assembly_graph(DiGraph):
         self.add_nodes_from(edge_data['name'])
 
         for i, node in enumerate(edge_data['name']):
-            for j, neighbor in enumerate(edge_data["neighbors"].iloc[i]):
+            for j, neighbor in enumerate(edge_data["neighbors"][i]):
                 self.add_edge(node, neighbor)
 
         self.assembly_data = edge_data
@@ -44,7 +44,7 @@ class Assembly_graph(DiGraph):
             A dictionary of edge data.
             A[key][i] corresponds to property "key" of the i-th edge of an assembly (sub-) graph
         """
-        return self.assembly_data.loc[self.assembly_data['name'].isin(list(nodes))]
+        return self.assembly_data.filter(col('name').is_in(nodes))
 
     def component_graph(self, component: set)->Self:
         """
