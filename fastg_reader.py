@@ -6,7 +6,7 @@ class FileError(Exception):
 
 class Fastg_reader():
     """
-    Reads .fastg-files and converts them into networkx.DiGraph()-objects
+    Reading .fasta-files from bcalm and returning it's content as a polars.DataFrame
     """
 
     edge_descriptor_pattern = compile(r"^EDGE_(?P<name>[a-zA-Z\d]+)_length_(?P<length>\d+)_cov_(?P<coverage>[\d\.]+)$")
@@ -79,7 +79,7 @@ class Fastg_reader():
         Returns attributes of a .fastg edge descriptor as a dictionary.
 
         Example:
-            In:  extract_node_attrs("EDGE_3_length_100_cov_28.087'")
+            In:  "EDGE_3_length_100_cov_28.087'"
             Out: {"name": "3-", "length": 100, "coverage": 28.087}
 
         Parameters
